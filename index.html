@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>Manhwa Translation Alignment Checker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div><div class="eyebrow">TYPESETTER TOOLKIT</div><h1>Manhwa Translation Alignment Checker</h1><p>ตรวจคู่ข้อความ · หาแถวผิดปกติ · จัดรูปแบบ TXT</p></div>
+  <div class="header-actions"><button id="loadDemo" class="secondary">โหลดตัวอย่าง</button><button id="exportTxt" class="primary">ส่งออก TXT</button></div>
+</header>
+<main>
+<section class="panel setup">
+  <div class="section-heading"><div><h2>1. นำเข้าข้อมูล</h2><p>ทำงานในเบราว์เซอร์ของคุณ ไฟล์จะไม่ถูกอัปโหลดไปยังเซิร์ฟเวอร์ของแอปนี้</p></div><span class="pill">LOCAL-FIRST</span></div>
+  <div class="upload-grid">
+    <label class="dropzone" for="imageFiles"><span class="drop-icon">▧</span><strong>ภาพต้นฉบับ</strong><span>เลือกภาพหลายไฟล์ หรือเลือกภาพจากโฟลเดอร์</span><small>JPG · PNG · WEBP</small><input id="imageFiles" type="file" accept="image/*" multiple></label>
+    <label class="dropzone" for="txtFile"><span class="drop-icon">≡</span><strong>ไฟล์คำแปล .TXT</strong><span>รูปแบบที่แนะนำ: EN 1 บรรทัด ตามด้วย TH 1 บรรทัด</span><small>รองรับหัวข้อหน้า เช่น 001, 002</small><input id="txtFile" type="file" accept=".txt,text/plain"></label>
+  </div>
+  <div class="settings-row">
+    <label>วิธีแยกคู่ข้อความ
+      <select id="parseMode"><option value="alternating">อังกฤษ 1 บรรทัด / ไทย 1 บรรทัด (แนะนำ)</option><option value="thai-only">ตรวจเฉพาะบรรทัดคำแปลไทย</option></select>
+    </label>
+    <label>ภาษา OCR
+      <select id="ocrLang"><option value="eng">English</option></select>
+    </label>
+    <label class="check-setting"><input id="ocrEnabled" type="checkbox" checked> ใช้ OCR ช่วยตรวจภาพ (ต้องเชื่อมอินเทอร์เน็ตเพื่อโหลด OCR ครั้งแรก)</label>
+  </div>
+  <div class="notice"><strong>หมายเหตุ:</strong> OCR และจำนวนรายการช่วยชี้จุดน่าสงสัยได้ แต่ไม่สามารถตัดสินความถูกต้องของคำแปลได้ 100% โดยเฉพาะ SFX, ข้อความตกแต่ง, กล่องที่มีหลายประโยค หรือ OCR อ่านผิด</div>
+</section>
+
+<section class="summary-grid" aria-label="สรุปผล">
+  <div class="stat"><span>จำนวนหน้า</span><strong id="statPages">0</strong></div>
+  <div class="stat"><span>คู่ข้อความ</span><strong id="statPairs">0</strong></div>
+  <div class="stat warn"><span>จุดที่ควรตรวจ</span><strong id="statIssues">0</strong></div>
+  <div class="stat"><span>ท้ายบรรทัดมีช่องว่าง</span><strong id="statSpaces">0</strong></div>
+</section>
+
+<section class="workspace">
+  <aside class="panel page-panel">
+    <div class="section-heading"><div><h2>2. หน้า / ภาพ</h2><p>เลือกหน้าเพื่อดูภาพและรายการ</p></div><button id="runOcr" class="secondary small">เริ่ม OCR</button></div>
+    <div id="pageList" class="page-list"><div class="empty">ยังไม่มีภาพ<br>อัปโหลดภาพเพื่อเริ่มต้น</div></div>
+    <div id="ocrStatus" class="ocr-status">OCR ยังไม่เริ่มทำงาน</div>
+  </aside>
+  <section class="panel editor-panel">
+    <div class="section-heading"><div><h2>3. ตรวจและแก้ไขรายการ</h2><p id="currentPageLabel">นำเข้าไฟล์ TXT และภาพเพื่อเริ่มต้น</p></div><div class="inline-actions"><button id="checkAll" class="secondary small">ตรวจสอบทั้งหมด</button><button id="cleanSpaces" class="secondary small">ลบ Space ท้ายบรรทัด</button></div></div>
+    <div id="imageViewer" class="image-viewer"><div class="empty">ภาพต้นฉบับจะแสดงตรงนี้</div></div>
+    <div id="ocrText" class="ocr-text hidden"></div>
+    <div id="issues" class="issues"></div>
+    <div class="table-wrap"><table><thead><tr><th>#</th><th>ข้อความอังกฤษ / ต้นฉบับ</th><th>คำแปลไทย (แก้ไขได้)</th><th>สถานะ</th><th></th></tr></thead><tbody id="pairRows"><tr><td colspan="5" class="empty">ยังไม่มีข้อมูล</td></tr></tbody></table></div>
+  </section>
+</section>
+<section class="panel export-panel">
+  <div class="section-heading"><div><h2>4. รูปแบบและส่งออก</h2><p>ส่งออกเป็นคู่ EN/TH โดยเว้นบรรทัดว่าง 1 บรรทัดระหว่างแต่ละคู่</p></div><button id="copyReport" class="secondary">คัดลอกรายงาน</button></div>
+  <div class="export-options"><label class="check-setting"><input id="includeEnglish" type="checkbox" checked> รวมบรรทัดภาษาอังกฤษ</label><label class="check-setting"><input id="includeHeaders" type="checkbox" checked> คงหัวข้อหมายเลขหน้า</label><label class="check-setting"><input id="keepBlankLines" type="checkbox" checked> เว้นบรรทัดว่างระหว่างคู่ข้อความ</label></div>
+  <div id="report" class="report">ยังไม่มีรายงาน</div>
+</section>
+<footer>Manhwa Translation Alignment Checker · รุ่นเริ่มต้นสำหรับ GitHub Pages · ตรวจข้อมูลในเบราว์เซอร์</footer>
+</main>
+<div id="toast" class="toast" role="status"></div>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="app.js"></script>
+</body></html>
